@@ -2,13 +2,14 @@ package com.demo;
 
 import net.bytebuddy.asm.Advice;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 public class ConstructorAdvice {
 
-    @Advice.OnMethodExit
-    public static void onExit(@Advice.Origin String method,
+    @Advice.OnMethodExit(inline = false)
+    public static void onExit(@Advice.Origin Constructor constructor,
                               @Advice.AllArguments Object[] args) throws Exception {
-        System.out.println(String.format("ConstructorAdvice: method: %s, args: %s", method, Arrays.asList(args)));
+        System.out.println(String.format("ConstructorAdvice: constructor: %s, args: %s", constructor, Arrays.asList(args)));
     }
 }
