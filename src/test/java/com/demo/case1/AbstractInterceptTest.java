@@ -3,7 +3,7 @@ package com.demo.case1;
 import com.demo.*;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.dynamic.ClassFileLocator;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.SuperMethodCall;
 import net.bytebuddy.matcher.ElementMatchers;
@@ -79,6 +79,11 @@ public class AbstractInterceptTest {
     }
 
     protected void installConstructorInterceptor(String className, int round) {
+        installConstructorInterceptor1(className, round);
+        // installConstructorInterceptor2(className, round);
+    }
+
+    protected void installConstructorInterceptor1(String className, int round) {
         String interceptorClassName = CONSTRUCTOR_INTERCEPTOR_CLASS + "$" + round;
         String fieldName = "_sw_delegate$constructor" + round;
         new AgentBuilder.Default()
@@ -93,6 +98,30 @@ public class AbstractInterceptTest {
                                             MethodDelegation.withDefaultConfiguration().to(
                                                     new ConstructorInter(interceptorClassName, classLoader), fieldName)
                                     ));
+                        }
+                )
+                .with(new AgentBuilder.Listener.Adapter() {
+                    @Override
+                    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
+                        System.err.println(String.format("Transform Error: interceptorClass:%s, typeName: %s, classLoader: %s, module: %s, loaded: %s", interceptorClassName, typeName, classLoader, module, loaded));
+                        throwable.printStackTrace();
+                    }
+                })
+                .installOn(ByteBuddyAgent.install());
+    }
+
+    protected void installConstructorInterceptor2(String className, int round) {
+        String interceptorClassName = CONSTRUCTOR_INTERCEPTOR_CLASS + "$" + round;
+        String fieldName = "_sw_delegate$constructor" + round;
+        new AgentBuilder.Default()
+                .with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
+                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                //.with(ClassFileLocator.ForInstrumentation.fromInstalledAgent(InterceptTest1.class.getClassLoader()))
+                .type(ElementMatchers.named(className))
+                .transform((builder, typeDescription, classLoader, module, protectionDomain) -> {
+                            return builder
+                                    .constructor(ElementMatchers.any())
+                                    .intercept(Advice.to(ConstructorAdvice.class));
                         }
                 )
                 .with(new AgentBuilder.Listener.Adapter() {
