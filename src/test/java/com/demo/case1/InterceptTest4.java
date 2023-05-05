@@ -25,6 +25,12 @@ public class InterceptTest4 extends AbstractInterceptTest {
             checkConstructorInterceptor(1);
             checkMethodInterceptor(SAY_HELLO_METHOD, 1);
         }
+
+//        try {
+//            TimeUnit.DAYS.sleep(1);
+//        } catch (InterruptedException e) {
+//        }
+
     }
 
 }

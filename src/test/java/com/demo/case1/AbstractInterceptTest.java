@@ -46,15 +46,17 @@ public class AbstractInterceptTest {
     }
 
     protected void installMethodInterceptor(String className, String methodName, int round) {
-        this.installMethodInterceptor(className, methodName, round, false);
+        this.installMethodInterceptor1(className, methodName, round, false);
+//        this.installMethodInterceptor2(className, methodName, round, false);
     }
 
-    protected void installMethodInterceptor(String className, String methodName, int round, boolean deleteDuplicatedFields) {
+    protected void installMethodInterceptor1(String className, String methodName, int round, boolean deleteDuplicatedFields) {
         String interceptorClassName = METHOD_INTERCEPTOR_CLASS + "$" + methodName + "$" + round;
         String fieldName = "_sw_delegate$" + methodName + round;
-        new AgentBuilder.Default()
-                .with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
+        AgentBuilder agentBuilder = new AgentBuilder.Default();
+        agentBuilder.with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
                 .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                .with(new MyClassFileLocator(ByteBuddyAgent.install(), getClassLoader(), "auxiliary$"))
                 //.with(ClassFileLocator.ForInstrumentation.fromInstalledAgent(InterceptTest1.class.getClassLoader()))
                 .type(ElementMatchers.named(className))
                 .transform((builder, typeDescription, classLoader, module, protectionDomain) -> {
@@ -78,17 +80,51 @@ public class AbstractInterceptTest {
                 .installOn(ByteBuddyAgent.install());
     }
 
+    private static ClassLoader getClassLoader() {
+        return AbstractInterceptTest.class.getClassLoader();
+    }
+
+    protected void installMethodInterceptor2(String className, String methodName, int round, boolean deleteDuplicatedFields) {
+        String interceptorClassName = METHOD_INTERCEPTOR_CLASS + "$" + methodName + "$" + round;
+        String fieldName = "_sw_delegate$" + methodName + round;
+        AgentBuilder agentBuilder = new AgentBuilder.Default();
+        //agentBuilder = agentBuilder.disableClassFormatChanges();
+        agentBuilder.with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
+                .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                //.with(ClassFileLocator.ForInstrumentation.fromInstalledAgent(InterceptTest1.class.getClassLoader()))
+                .type(ElementMatchers.named(className))
+                .transform((builder, typeDescription, classLoader, module, protectionDomain) -> {
+                            if (deleteDuplicatedFields) {
+                                builder = builder.visit(new MyAsmVisitorWrapper());
+                            }
+                            return builder
+                                    .method(ElementMatchers.nameContainsIgnoreCase(methodName))
+                                    .intercept(Advice.to(InstMethodAdvice.class));
+                        }
+                )
+                .with(new AgentBuilder.Listener.Adapter() {
+                    @Override
+                    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
+                        System.err.println(String.format("Transform Error: interceptorClassName: %s, typeName: %s, classLoader: %s, module: %s, loaded: %s", interceptorClassName, typeName, classLoader, module, loaded));
+                        throwable.printStackTrace();
+                    }
+                })
+                .installOn(ByteBuddyAgent.install());
+    }
+
     protected void installConstructorInterceptor(String className, int round) {
         installConstructorInterceptor1(className, round);
-        // installConstructorInterceptor2(className, round);
+//        installConstructorInterceptor2(className, round);
     }
 
     protected void installConstructorInterceptor1(String className, int round) {
         String interceptorClassName = CONSTRUCTOR_INTERCEPTOR_CLASS + "$" + round;
         String fieldName = "_sw_delegate$constructor" + round;
-        new AgentBuilder.Default()
-                .with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
+        AgentBuilder agentBuilder = new AgentBuilder.Default();
+//        agentBuilder = agentBuilder.disableClassFormatChanges();
+        agentBuilder.with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
                 .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+                .with(new MyClassFileLocator(ByteBuddyAgent.install(), getClassLoader(), "auxiliary$"))
                 //.with(ClassFileLocator.ForInstrumentation.fromInstalledAgent(InterceptTest1.class.getClassLoader()))
                 .type(ElementMatchers.named(className))
                 .transform((builder, typeDescription, classLoader, module, protectionDomain) -> {
@@ -113,8 +149,9 @@ public class AbstractInterceptTest {
     protected void installConstructorInterceptor2(String className, int round) {
         String interceptorClassName = CONSTRUCTOR_INTERCEPTOR_CLASS + "$" + round;
         String fieldName = "_sw_delegate$constructor" + round;
-        new AgentBuilder.Default()
-                .with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
+        AgentBuilder agentBuilder = new AgentBuilder.Default();
+        // agentBuilder = agentBuilder.disableClassFormatChanges();
+        agentBuilder.with(AgentBuilder.DescriptionStrategy.Default.POOL_FIRST)
                 .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
                 //.with(ClassFileLocator.ForInstrumentation.fromInstalledAgent(InterceptTest1.class.getClassLoader()))
                 .type(ElementMatchers.named(className))

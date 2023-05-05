@@ -1,12 +1,9 @@
 package com.demo.case1;
 
-import com.demo.EnhanceHelper;
 import net.bytebuddy.agent.ByteBuddyAgent;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.instrument.UnmodifiableClassException;
-import java.util.List;
 
 public class InterceptTest1 extends AbstractInterceptTest {
 
