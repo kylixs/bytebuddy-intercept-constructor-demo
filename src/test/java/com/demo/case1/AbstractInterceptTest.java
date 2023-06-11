@@ -1,6 +1,7 @@
 package com.demo.case1;
 
 import com.demo.*;
+import com.demo.biz.BizFoo;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -8,12 +9,12 @@ import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.SuperMethodCall;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 
 import java.util.List;
 
 public class AbstractInterceptTest {
-    public static final String TARGET_CLASS_NAME = "com.demo.BizFoo";
+    public static final String TARGET_CLASS_NAME = "com.demo.biz.BizFoo";
     public static final String SAY_HELLO_METHOD = "sayHello";
     public static final int BASE_INT_VALUE = 100;
     public static final String CONSTRUCTOR_INTERCEPTOR_CLASS = "constructorInterceptorClass";
@@ -27,21 +28,21 @@ public class AbstractInterceptTest {
         String result = new BizFoo("Smith").sayHello("Joe");
         System.out.println(result);
 
-        Assertions.assertEquals(BASE_INT_VALUE + round, intResult, "Int value is unexpected");
-        Assertions.assertEquals("Hello to John from Smith", result, "String value is unexpected");
+        Assert.assertEquals("Int value is unexpected", BASE_INT_VALUE + round, intResult);
+        Assert.assertEquals("String value is unexpected", "Hello to John from Smith", result);
     }
 
     protected static void checkMethodInterceptor(String method, int round) {
         List<String> interceptors = EnhanceHelper.getInterceptors();
         String interceptorName = METHOD_INTERCEPTOR_CLASS + "$" + method + "$" + round;
-        Assertions.assertTrue(interceptors.contains(interceptorName), "Not found interceptor: " + interceptorName);
+        Assert.assertTrue("Not found interceptor: " + interceptorName, interceptors.contains(interceptorName));
         System.out.println("Found interceptor: " + interceptorName);
     }
 
     protected static void checkConstructorInterceptor(int round) {
         List<String> interceptors = EnhanceHelper.getInterceptors();
         String interceptorName = CONSTRUCTOR_INTERCEPTOR_CLASS + "$" + round;
-        Assertions.assertTrue(interceptors.contains(interceptorName), "Not found interceptor: " + interceptorName);
+        Assert.assertTrue("Not found interceptor: " + interceptorName, interceptors.contains(interceptorName));
         System.out.println("Found interceptor: " + interceptorName);
     }
 

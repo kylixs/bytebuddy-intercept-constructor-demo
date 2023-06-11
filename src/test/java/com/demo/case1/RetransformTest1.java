@@ -1,14 +1,11 @@
 package com.demo.case1;
 
-import com.demo.BizFoo;
+import com.demo.biz.BizFoo;
 import net.bytebuddy.agent.ByteBuddyAgent;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
-import java.security.ProtectionDomain;
 
 public class RetransformTest1 extends AbstractRetransformTest {
 

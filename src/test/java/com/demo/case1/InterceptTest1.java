@@ -1,7 +1,7 @@
 package com.demo.case1;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.lang.instrument.UnmodifiableClassException;
 
